@@ -1,5 +1,8 @@
-configuration.yaml
-```sh
+# Home Assistant untuk Waktu Solat mengikut masa dari Jakim
+Menggunakan api dari https://api.azanpro.com/ untuk mendapatkan waktu solat mengikut tetapan Jakim
+
+### configuration.yaml
+```yaml
 sensor:
   - platform: time_date
     display_options:
@@ -11,10 +14,6 @@ sensor:
       - 'time_date'
       - 'time_utc'
       - 'beat'
-  - platform: rest
-    resource: http://ip.jsontest.com
-    name: External IP Address
-    value_template: '{{ value_json.ip }}'
   - platform: rest
     resource: https://api.azanpro.com/times/today.json?zone=sgr01&format=24-hour
     name: Jakim Waktu Solat Daily
@@ -60,189 +59,318 @@ sensor:
             value_template: '{{ states.sensor.jakim_waktu_solat_daily.attributes["locations"] }}'
 ```
 
-automation.yaml
-```sh
+### automation.yaml
+Tukar mp3 dengan pilihan anda. Tukar entity_id dengan chromecast anda. Saya gunakan 2 output iaitu MPD dan chromecast
+``
+entity_id: media_player.living_room_speaker
+``
+``
+entity_id: media_player.mpd
+``
+```yaml
+- id: '1610907092345'
+  alias: Jakim Daily Fetch Waktu Solat
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_ha_date") != states("sensor.date")}}'
+  condition: []
+  action:
+  - device_id: 71369dc85720c0d8512fd9e0e58dd0e6
+    domain: mobile_app
+    type: notify
+    message: Fetch Now
+    title: Jakim
+  mode: restart
+  max: 10
+- id: '1610912946292'
+  alias: Azan - 01 - Subuh
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_subuh") == states("sensor.time")}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.9'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Telah masuk waktu subuh bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - delay: 00:00:10
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.living_room_speaker
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_subuh.mp3
+      media_content_type: music
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.mpd
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_subuh.mp3
+      media_content_type: music
+  mode: single
+- id: '1610915963986'
+  alias: Azan - 02 - Zohor
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_zohor") == states("sensor.time")}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.5'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Telah masuk waktu zohor bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - delay: 00:00:10
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.living_room_speaker
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.mpd
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  mode: single
+- id: '1610916009800'
+  alias: Azan - 03 -  Asar
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_asar") == states("sensor.time")}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.5'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Telah masuk waktu asar bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - delay: 00:00:10
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.mpd
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.living_room_speaker
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  mode: single
+- id: '1610916034660'
+  alias: Azan - 04 - Maghrib
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_maghrib") == states("sensor.time")}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.8'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Telah masuk waktu maghrib bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - delay: 00:00:10
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.living_room_speaker
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.mpd
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  mode: single
+- id: '1610916052986'
+  alias: Azan - 05 - Isyak
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_isyak") == states("sensor.time")}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.4'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Telah masuk waktu isyak bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.mpd
+      message: Telah masuk waktu isyak bagi rumah ini dan kawasan kawasan yang sewaktu
+        dengannya
+      language: id
+  - delay: 00:00:10
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.living_room_speaker
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  - service: media_extractor.play_media
+    data:
+      entity_id: media_player.mpd
+      media_content_id: https://xxxxxx.duckdns.org/local/sounds/azan_zohor_asar_maghrib_isyak.mp3
+      media_content_type: music
+  mode: single
 
+- id: '1611057450253'
+  alias: Azan - 05 - Isyak - 15 Minit sebelum
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_isyak") == (as_local(now()).strftime("%s")
+      | int + (25*60)) | timestamp_custom("%H:%M", false)}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.6'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Azan Isyak akan berkumandang dalam masa 15 minit lagi
+      language: id
+  - delay: 00:00:10
+  mode: single
+- id: '1611216229092'
+  alias: Azan - 03 - Asar - 15 Minit sebelum
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_asar") == (as_local(now()).strftime("%s")
+      | int + (25*60)) | timestamp_custom("%H:%M", false)}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.6'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Azan Asar akan berkumandang dalam masa 15 minit lagi
+      language: id
+  mode: single
+- id: '1611216272536'
+  alias: Azan - 04 - Maghrib - 15 Minit sebelum
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_maghrib") == (as_local(now()).strftime("%s")
+      | int + (25*60)) | timestamp_custom("%H:%M", false)}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.6'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Azan Maghrib akan berkumandang dalam masa 15 minit lagi
+      language: id
+  mode: single
+- id: '1611216332786'
+  alias: Azan - 02 - Zohor - 15 Minit sebelum
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_zohor") == (as_local(now()).strftime("%s")
+      | int + (25*60)) | timestamp_custom("%H:%M", false)}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.6'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Azan Zohor akan berkumandang dalam masa 15 minit lagi
+      language: id
+  mode: single
+- id: '1611216388029'
+  alias: Azan - 01 - Subuh - 15 Minit sebelum
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states("sensor.jakim_subuh") == (as_local(now()).strftime("%s")
+      | int + (25*60)) | timestamp_custom("%H:%M", false)}}'
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: '0.6'
+    entity_id: media_player.living_room_speaker
+  - service: tts.google_translate_say
+    entity_id: media_player.living_room_speaker
+    data:
+      entity_id: media_player.living_room_speaker
+      message: Azan Subuh akan berkumandang dalam masa 15 minit lagi
+      language: id
+  mode: single
 ```
 
-# Dillinger
 
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
-
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
-
-Dillinger is a cloud-enabled, mobile-ready, offline-storage, AngularJS powered HTML5 Markdown editor.
-
-  - Type some Markdown on the left
-  - See HTML in the right
-  - Magic
-
-# New Features!
-
-  - Import a HTML file and watch it magically convert to Markdown
-  - Drag and drop images (requires your Dropbox account be linked)
-
-
-You can also:
-  - Import and save files from GitHub, Dropbox, Google Drive and One Drive
-  - Drag and drop markdown and HTML files into Dillinger
-  - Export documents as Markdown, HTML and PDF
-
-Markdown is a lightweight markup language based on the formatting conventions that people naturally use in email.  As [John Gruber] writes on the [Markdown site][df1]
-
-> The overriding design goal for Markdown's
-> formatting syntax is to make it as readable
-> as possible. The idea is that a
-> Markdown-formatted document should be
-> publishable as-is, as plain text, without
-> looking like it's been marked up with tags
-> or formatting instructions.
-
-This text you see here is *actually* written in Markdown! To get a feel for Markdown's syntax, type some text into the left window and watch the results in the right.
-
-### Tech
-
-Dillinger uses a number of open source projects to work properly:
-
-* [AngularJS] - HTML enhanced for web apps!
-* [Ace Editor] - awesome web-based text editor
-* [markdown-it] - Markdown parser done right. Fast and easy to extend.
-* [Twitter Bootstrap] - great UI boilerplate for modern web apps
-* [node.js] - evented I/O for the backend
-* [Express] - fast node.js network app framework [@tjholowaychuk]
-* [Gulp] - the streaming build system
-* [Breakdance](https://breakdance.github.io/breakdance/) - HTML to Markdown converter
-* [jQuery] - duh
-
-And of course Dillinger itself is open source with a [public repository][dill]
- on GitHub.
-
-### Installation
-
-Dillinger requires [Node.js](https://nodejs.org/) v4+ to run.
-
-Install the dependencies and devDependencies and start the server.
-
-```sh
-$ cd dillinger
-$ npm install -d
-$ node app
+### automation.yaml
+Dan kita perlu restart HA setiap hari pada jam 1 malam. Jadi sensor akan automatik ambil data baru.
+```yaml
+- id: '1610916523303'
+  alias: Restart HA everyday at 01:00:00
+  description: ''
+  trigger:
+  - platform: time
+    at: 01:00:00
+  condition: []
+  action:
+  - service: homeassistant.restart
+    data: {}
+  mode: single
 ```
 
-For production environments...
-
-```sh
-$ npm install --production
-$ NODE_ENV=production node app
-```
-
-### Plugins
-
-Dillinger is currently extended with the following plugins. Instructions on how to use them in your own application are linked below.
-
-| Plugin | README |
-| ------ | ------ |
-| Dropbox | [plugins/dropbox/README.md][PlDb] |
-| GitHub | [plugins/github/README.md][PlGh] |
-| Google Drive | [plugins/googledrive/README.md][PlGd] |
-| OneDrive | [plugins/onedrive/README.md][PlOd] |
-| Medium | [plugins/medium/README.md][PlMe] |
-| Google Analytics | [plugins/googleanalytics/README.md][PlGa] |
-
-
-### Development
-
-Want to contribute? Great!
-
-Dillinger uses Gulp + Webpack for fast developing.
-Make a change in your file and instantaneously see your updates!
-
-Open your favorite Terminal and run these commands.
-
-First Tab:
-```sh
-$ node app
-```
-
-Second Tab:
-```sh
-$ gulp watch
-```
-
-(optional) Third:
-```sh
-$ karma test
-```
-#### Building for source
-For production release:
-```sh
-$ gulp build --prod
-```
-Generating pre-built zip archives for distribution:
-```sh
-$ gulp build dist --prod
-```
-### Docker
-Dillinger is very easy to install and deploy in a Docker container.
-
-By default, the Docker will expose port 8080, so change this within the Dockerfile if necessary. When ready, simply use the Dockerfile to build the image.
-
-```sh
-cd dillinger
-docker build -t joemccann/dillinger:${package.json.version} .
-```
-This will create the dillinger image and pull in the necessary dependencies. Be sure to swap out `${package.json.version}` with the actual version of Dillinger.
-
-Once done, run the Docker image and map the port to whatever you wish on your host. In this example, we simply map port 8000 of the host to port 8080 of the Docker (or whatever port was exposed in the Dockerfile):
-
-```sh
-docker run -d -p 8000:8080 --restart="always" <youruser>/dillinger:${package.json.version}
-```
-
-Verify the deployment by navigating to your server address in your preferred browser.
-
-```sh
-127.0.0.1:8000
-```
-
-#### Kubernetes + Google Cloud
-
-See [KUBERNETES.md](https://github.com/joemccann/dillinger/blob/master/KUBERNETES.md)
-
-
-### Todos
-
- - Write MORE Tests
- - Add Night Mode
-
-License
-----
-
-MIT
-
-
-**Free Software, Hell Yeah!**
-
-[//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
-
-
-   [dill]: <https://github.com/joemccann/dillinger>
-   [git-repo-url]: <https://github.com/joemccann/dillinger.git>
-   [john gruber]: <http://daringfireball.net>
-   [df1]: <http://daringfireball.net/projects/markdown/>
-   [markdown-it]: <https://github.com/markdown-it/markdown-it>
-   [Ace Editor]: <http://ace.ajax.org>
-   [node.js]: <http://nodejs.org>
-   [Twitter Bootstrap]: <http://twitter.github.com/bootstrap/>
-   [jQuery]: <http://jquery.com>
-   [@tjholowaychuk]: <http://twitter.com/tjholowaychuk>
-   [express]: <http://expressjs.com>
-   [AngularJS]: <http://angularjs.org>
-   [Gulp]: <http://gulpjs.com>
-
-   [PlDb]: <https://github.com/joemccann/dillinger/tree/master/plugins/dropbox/README.md>
-   [PlGh]: <https://github.com/joemccann/dillinger/tree/master/plugins/github/README.md>
-   [PlGd]: <https://github.com/joemccann/dillinger/tree/master/plugins/googledrive/README.md>
-   [PlOd]: <https://github.com/joemccann/dillinger/tree/master/plugins/onedrive/README.md>
-   [PlMe]: <https://github.com/joemccann/dillinger/tree/master/plugins/medium/README.md>
-   [PlGa]: <https://github.com/RahulHP/dillinger/blob/master/plugins/googleanalytics/README.md>
+### Demo video dan gambar
+* [Part 1](https://www.facebook.com/farxpeace/posts/10159654361284162) - https://www.facebook.com/farxpeace/posts/10159654361284162
+    * Menggunakan Remote 433Mhz dan Smart Switch. Anak-anak mudah untuk buka tutup lampu sendiri kerana kita boleh letakkan Remote rendah sikit.
+    * Door Sensor untuk detect keadaan pintu sama ada tertutup atau terbuka. Seandainya tertutup, Exhaust Fan akan hidup secara automatik dan akan padam sendiri selepas 5 minit.
+* [Part 2](https://www.facebook.com/farxpeace/posts/10159657148119162) - https://www.facebook.com/farxpeace/posts/10159657148119162
+    * Cuba buat home automation dengan menggunakan HA
+* [Part 3](https://www.facebook.com/farxpeace/posts/10159704171579162) - https://www.facebook.com/farxpeace/posts/10159704171579162
+    * Masukkan HA dalam Raspberry Pi 4 Model B. 
