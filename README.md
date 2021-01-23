@@ -68,21 +68,6 @@ entity_id: media_player.living_room_speaker
 entity_id: media_player.mpd
 ``
 ```yaml
-- id: '1610907092345'
-  alias: Jakim Daily Fetch Waktu Solat
-  description: ''
-  trigger:
-  - platform: template
-    value_template: '{{states("sensor.jakim_ha_date") != states("sensor.date")}}'
-  condition: []
-  action:
-  - device_id: 71369dc85720c0d8512fd9e0e58dd0e6
-    domain: mobile_app
-    type: notify
-    message: Fetch Now
-    title: Jakim
-  mode: restart
-  max: 10
 - id: '1610912946292'
   alias: Azan - 01 - Subuh
   description: ''
